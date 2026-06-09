@@ -1,0 +1,14 @@
+requests
+langchain-docling
+langchain-community
+langchain-opendataloader-pdf
+langchain-text-splitters
+qdrant-client
+langchain
+langchain-huggingface
+sentence_transformers
+pymupdf
+langchain-qdrant
+FlagEmbedding
+httpx-retries
+pika

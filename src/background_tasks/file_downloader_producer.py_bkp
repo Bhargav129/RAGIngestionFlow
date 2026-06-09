@@ -1,0 +1,46 @@
+import pika
+import json
+
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='localhost')
+)
+
+channel = connection.channel()
+
+exchange = channel.exchange_declare(exchange='direct_exchange', exchange_type='direct')
+
+channel.queue_declare(queue='pdf_downloader', durable=True)
+channel.queue_declare(queue='pdf_extractor_loader', durable=True)
+
+channel.queue_bind(exchange='direct_exchange', queue='pdf_downloader', routing_key='downloader')
+channel.queue_bind(exchange='direct_exchange', queue='pdf_extractor_loader', routing_key='extractor_loader')
+
+
+async def downloader_task(ticker_json, links):
+
+    body = {"data": ticker_json, "links": links}
+    message = json.dumps(body)
+
+    print("################ @@@@@@@@@@@ IN producer getting list of pdfs {}".format(links))
+
+    channel.basic_publish(
+        exchange='direct_exchange',
+        routing_key='downloader',
+        body=message,
+        properties=pika.BasicProperties(
+            delivery_mode=pika.DeliveryMode.Persistent
+        ))
+
+
+def extract_loader_tasks():
+    body = {"data": ticker_json, "links": links, "session": session}
+
+    message = json.dumps(body)
+
+    channel.basic_publish(
+        exchange='direct_exchange',
+        routing_key='extractor_loader',
+        body=message,
+        properties=pika.BasicProperties(
+            delivery_mode=pika.DeliveryMode.Persistent
+        ))
